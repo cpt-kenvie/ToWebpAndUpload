@@ -1,276 +1,348 @@
 <!DOCTYPE html>
-<html lang="zh">
+<html lang="en">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>图片上传和转换为 WebP 格式</title>
-    <style>
+
+
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22>
+      <text y=%22.9em%22 font-size=%2290%22>
+        🦔
+      </text>
+    </svg>">
+
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>压缩并上传</title>
+  <meta name="description" content="🌱 A small project by Ben Moren: gardening, but with emojis and less time 🌿">
+
+
+  <!-- Control the behavior of search engine crawling and indexing -->
+  <meta name="robots" content="index,follow"><!-- All Search Engines -->
+  <meta name="googlebot" content="index,follow"><!-- Google Specific -->
+
+  <!-- Tells Google not to provide a translation for this document -->
+  <meta name="google" content="notranslate">
+
+  <!-- Short description of your document's subject -->
+  <meta name="subject" content="🌱 A small project by Ben Moren: gardening, but with emojis and less time 🌿">
+
+  <!-- Gives a general age rating based on the document's content -->
+  <meta name="rating" content="General">
+
+
+  <meta property="og:url" content="http://drawing.garden">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="drawing.garden">
+  <meta property="og:image" content="http://drawing.garden/dg.jpg">
+  <meta property="og:image:width" content="2170">
+  <meta property="og:image:height" content="1210">
+  <meta property="og:image:alt" content="🌱 A small project by Ben Moren: gardening, but with emojis and less time 🌿">
+  <meta property="og:description"
+    content="🌱 A small project by Ben Moren: gardening, but with emojis and less time 🌿">
+  <meta property="og:site_name" content="drawing.garden">
+  <meta property="og:locale" content="zh_cn">
+  <meta property="article:author" content="Ben Moren">
+
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:creator" content="@bmoren">
+  <meta name="twitter:url" content="http://drawing.garden">
+  <meta name="twitter:title" content="drawing.garden">
+  <meta name="twitter:description"
+    content="🌱 A small project by Ben Moren: gardening, but with emojis and less time 🌿">
+  <meta name="twitter:image" content="http://drawing.garden/dg.jpg">
+  <meta name="twitter:image:alt" content="🌱 A small project by Ben Moren: gardening, but with emojis and less time 🌿">
+
+
+
+  <script src="{{ url_for('static', filename='js/p5.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/p5.sound.min.js') }}"></script>
+  <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/style.css') }}">
+  <meta charset="utf-8">
+
+
+
+  <link href="{{ url_for('static', filename='css/swap.css') }}" rel="stylesheet">
+  <!-- <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital@1&display=swap" rel="stylesheet"> -->
+  <style>
         /* 基础重置和全局设置 */
         * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
 
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(to right, #6a11cb, #2575fc);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            color: #fff;
-        }
+    body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background: linear-gradient(to right, #6a11cb, #2575fc);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        color: #fff;
+    }
 
+    .container {
+      z-index: 1000;
+        background-color: #fff;
+        padding: 30px;
+        border-radius: 12px;
+        width: 100%;
+        max-width: 500px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        text-align: center;
+    }
+
+    h1 {
+        font-size: 28px;
+        margin-bottom: 20px;
+        color: #333;
+    }
+
+    label {
+        font-size: 14px;
+        color: #333;
+        margin-bottom: 8px;
+        display: inline-block;
+        text-align: left;
+        width: 100%;
+    }
+
+    input[type="file"] {
+        font-size: 14px;
+        padding: 12px;
+        margin: 10px 0 20px 0;
+        border-radius: 6px;
+        border: 1px solid #ddd;
+        width: 100%;
+        background-color: #f7f7f7;
+        transition: background-color 0.3s;
+    }
+
+    input[type="file"]:hover {
+        background-color: #e9e9e9;
+    }
+
+    button {
+        background-color: #2575fc;
+        color: white;
+        font-size: 16px;
+        padding: 12px 20px;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        width: 100%;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        position: relative; /* 新增 */
+    }
+
+    button:hover {
+        background-color: #6a11cb;
+        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.2);
+    }
+
+    button:active {
+        background-color: #5a09a3;
+    }
+
+    .loading-spinner {
+        border: 4px solid rgba(255, 255, 255, 0.5);
+        border-top: 4px solid white;
+        border-radius: 50%;
+        width: 20px;
+        height: 20px;
+        position: absolute; /* 新增 */
+        top: 50%; /* 新增 */
+        left: 50%; /* 新增 */
+        transform: translate(-50%, -50%); /* 新增 */
+        animation: spin 1s linear infinite; /* 新增 */
+        display: none; /* 隐藏 */
+    }
+
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+
+    .footer {
+        margin-top: 30px;
+        font-size: 12px;
+        color: #aaa;
+    }
+
+    .footer a {
+        color: #2575fc;
+        text-decoration: none;
+        transition: color 0.3s;
+    }
+
+    .footer a:hover {
+        color: #6a11cb;
+    }
+
+    /* 响应式设计 */
+    @media (max-width: 600px) {
         .container {
-            background-color: #fff;
-            padding: 30px;
-            border-radius: 12px;
-            width: 100%;
-            max-width: 500px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-            text-align: center;
+            padding: 20px;
         }
 
         h1 {
-            font-size: 28px;
-            margin-bottom: 20px;
-            color: #333;
-        }
-
-        label {
-            font-size: 14px;
-            color: #333;
-            margin-bottom: 8px;
-            display: inline-block;
-            text-align: left;
-            width: 100%;
+            font-size: 22px;
         }
 
         input[type="file"] {
-            font-size: 14px;
-            padding: 12px;
-            margin: 10px 0 20px 0;
-            border-radius: 6px;
-            border: 1px solid #ddd;
-            width: 100%;
-            background-color: #f7f7f7;
-            transition: background-color 0.3s;
-        }
-
-        input[type="file"]:hover {
-            background-color: #e9e9e9;
+            font-size: 12px;
         }
 
         button {
-            background-color: #2575fc;
-            color: white;
-            font-size: 16px;
-            padding: 12px 20px;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            width: 100%;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-            position: relative; /* 新增 */
+            font-size: 14px;
         }
+    }
 
-        button:hover {
-            background-color: #6a11cb;
-            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.2);
-        }
+    /* 复制按钮样式 */
+    .copy-button {
+        background-color: #4CAF50;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        padding: 5px 10px;
+        cursor: pointer;
+    }
 
-        button:active {
-            background-color: #5a09a3;
-        }
+    .copy-button:hover {
+        background-color: #45a049;
+    }
 
-        .loading-spinner {
-            border: 4px solid rgba(255, 255, 255, 0.5);
-            border-top: 4px solid white;
-            border-radius: 50%;
-            width: 20px;
-            height: 20px;
-            position: absolute; /* 新增 */
-            top: 50%; /* 新增 */
-            left: 50%; /* 新增 */
-            transform: translate(-50%, -50%); /* 新增 */
-            animation: spin 1s linear infinite; /* 新增 */
-            display: none; /* 隐藏 */
-        }
+    /* URL 容器样式 */
+    .url-container {
+        margin-top: 20px;
+        text-align: left;
+        color: #333;
+    }
 
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
+    .url-container div {
+        margin-bottom: 10px;
+    }
 
-        .footer {
-            margin-top: 30px;
-            font-size: 12px;
-            color: #aaa;
-        }
+    pre {
+        background-color: #f1f1f1;
+        padding: 10px;
+        border-radius: 4px;
+        overflow-x: auto;
+        white-space: pre-wrap;
+        margin: 5px 0;
+        color: #333;
+    }
 
-        .footer a {
-            color: #2575fc;
-            text-decoration: none;
-            transition: color 0.3s;
-        }
+    /* 改进 flex 布局 */
+    .url-item {
+        display: block;
+        align-items: center;
+        justify-content: space-between;
+    }
+  </style>
 
-        .footer a:hover {
-            color: #6a11cb;
-        }
+  
+  <script>
+    async function uploadFile(event) {
+      event.preventDefault();
+      const button = event.target.querySelector('button');
+      const spinner = button.querySelector('.loading-spinner');
 
-        /* 响应式设计 */
-        @media (max-width: 600px) {
-            .container {
-                padding: 20px;
-            }
+      // 显示加载动画
+      spinner.style.display = 'inline-block';
+      button.disabled = true; // 禁用按钮
 
-            h1 {
-                font-size: 22px;
-            }
+      const formData = new FormData(event.target);
+      const response = await fetch('/upload', {
+        method: 'POST',
+        body: formData
+      });
+      const result = await response.json();
 
-            input[type="file"] {
-                font-size: 12px;
-            }
+      // 隐藏加载动画
+      spinner.style.display = 'none';
+      button.disabled = false; // 恢复按钮
 
-            button {
-                font-size: 14px;
-            }
-        }
+      // 检查是否有错误信息
+      if (result.error) {
+        alert(result.error); // 弹窗显示错误信息
+        return;
+      }
 
-        /* 复制按钮样式 */
-        .copy-button {
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            padding: 5px 10px;
-            cursor: pointer;
-        }
+      // 显示链接
+      const urlContainer = document.querySelector('.url-container');
+      const imageUrl = result.message.data.links.url;
+      const htmlUrl = result.message.data.links.html;
+      const markdownUrl = result.message.data.links.markdown;
 
-        .copy-button:hover {
-            background-color: #45a049;
-        }
+      // 根据是否有数据来显示或隐藏 url-container
+      if (imageUrl) {
+        document.getElementById('Url').innerHTML = imageUrl;
+        document.getElementById('htmlUrl').innerHTML = htmlUrl;
+        document.getElementById('markdownUrl').innerHTML = markdownUrl;
+        urlContainer.style.display = 'block'; // 显示容器
+      } else {
+        urlContainer.style.display = 'none'; // 隐藏容器
+      }
+    }
 
-        /* URL 容器样式 */
-        .url-container {
-            margin-top: 20px;
-            text-align: left;
-            color: #333;
-        }
-
-        .url-container div {
-            margin-bottom: 10px;
-        }
-
-        pre {
-            background-color: #f1f1f1;
-            padding: 10px;
-            border-radius: 4px;
-            overflow-x: auto;
-            white-space: pre-wrap;
-            margin: 5px 0;
-            color: #333;
-        }
-
-        /* 改进 flex 布局 */
-        .url-item {
-            display: block;
-            align-items: center;
-            justify-content: space-between;
-        }
-    </style>
-    <script>
-        async function uploadFile(event) {
-            event.preventDefault();
-            const button = event.target.querySelector('button');
-            const spinner = button.querySelector('.loading-spinner');
-            
-            // 显示加载动画
-            spinner.style.display = 'inline-block';
-            button.disabled = true; // 禁用按钮
-
-            const formData = new FormData(event.target);
-            const response = await fetch('/upload', {
-                method: 'POST',
-                body: formData
-            });
-            const result = await response.json();
-            
-            // 隐藏加载动画
-            spinner.style.display = 'none';
-            button.disabled = false; // 恢复按钮
-
-            // 检查是否有错误信息
-            if (result.error) {
-                alert(result.error); // 弹窗显示错误信息
-                return;
-            }
-
-            // 显示链接
-            const urlContainer = document.querySelector('.url-container');
-            const imageUrl = result.message.data.links.url;
-            const htmlUrl = result.message.data.links.html;
-            const markdownUrl = result.message.data.links.markdown;
-    
-            // 根据是否有数据来显示或隐藏 url-container
-            if (imageUrl) {
-                document.getElementById('Url').innerHTML = imageUrl;
-                document.getElementById('htmlUrl').innerHTML = htmlUrl;
-                document.getElementById('markdownUrl').innerHTML = markdownUrl;
-                urlContainer.style.display = 'block'; // 显示容器
-            } else {
-                urlContainer.style.display = 'none'; // 隐藏容器
-            }
-        }
-        
-        function copyToClipboard(text, button) {
-            navigator.clipboard.writeText(text).then(() => {
-                button.innerHTML = "✅"; // 在按钮上显示✅
-                setTimeout(() => {
-                    button.innerHTML = "复制"; // 5秒后恢复文字
-                }, 5000);
-            }, (err) => {
-                console.error("复制失败: ", err);
-            });
-        }
-    </script>
+    function copyToClipboard(text, button) {
+      navigator.clipboard.writeText(text).then(() => {
+        button.innerHTML = "✅"; // 在按钮上显示✅
+        setTimeout(() => {
+          button.innerHTML = "复制"; // 5秒后恢复文字
+        }, 5000);
+      }, (err) => {
+        console.error("复制失败: ", err);
+      });
+    }
+  </script>
 </head>
 
 <body>
-    <div class="container">
-        <h1>上传图片并转换为 WebP 格式</h1>
-        <form action="/upload" method="post" enctype="multipart/form-data" onsubmit="uploadFile(event)">
-            <label for="file">选择图片文件 (JPG, JPEG, PNG):</label>
-            <input style="color: #333;" type="file" name="file" id="file" accept=".jpg,.jpeg,.png" required>
-            <br>
-            <button type="submit">
-                <div class="loading-spinner"></div> <!-- 加载动画 -->上传并转换
-            </button>
-        </form>
-        <div class="url-container" style="display: none;"> <!-- 初始隐藏 -->
-            <div class="url-item">
-                <span>图片链接:</span>
-                <pre id="Url"></pre>
-                <button class="url-button" onclick="copyToClipboard(document.getElementById('Url').innerText, this)">复制</button>
-            </div>
-            <div class="url-item">
-                <span>HTML链接:</span>
-                <pre id="htmlUrl"></pre>
-                <button class="url-button" onclick="copyToClipboard(document.getElementById('htmlUrl').innerText, this)">复制</button>
-            </div>
-            <div class="url-item">
-                <span>Markdown链接:</span>
-                <pre id="markdownUrl"></pre>
-                <button class="url-button" onclick="copyToClipboard(document.getElementById('markdownUrl').innerText, this)">复制</button>
-            </div>
-        </div>
 
-        <div class="footer">
-            <p>© 2024 | <a href="https://kenvie.com" target="_blank">Kenvie</a></p>
-        </div>
+  <div class="container">
+    <h1>上传图片并转换为 WebP 格式</h1>
+    <form action="/upload" method="post" enctype="multipart/form-data" onsubmit="uploadFile(event)">
+      <label for="file">选择图片文件 (JPG, JPEG, PNG):</label>
+      <input style="color: #333;" type="file" name="file" id="file" accept=".jpg,.jpeg,.png" required>
+      <br>
+      <button type="submit">
+        <div class="loading-spinner"></div> <!-- 加载动画 -->上传并转换
+      </button>
+    </form>
+    <div class="url-container" style="display: none;"> <!-- 初始隐藏 -->
+      <div class="url-item">
+        <span>图片链接:</span>
+        <pre id="Url"></pre>
+        <button class="url-button" onclick="copyToClipboard(document.getElementById('Url').innerText, this)">复制</button>
+      </div>
+      <div class="url-item">
+        <span>HTML链接:</span>
+        <pre id="htmlUrl"></pre>
+        <button class="url-button"
+          onclick="copyToClipboard(document.getElementById('htmlUrl').innerText, this)">复制</button>
+      </div>
+      <div class="url-item">
+        <span>Markdown链接:</span>
+        <pre id="markdownUrl"></pre>
+        <button class="url-button"
+          onclick="copyToClipboard(document.getElementById('markdownUrl').innerText, this)">复制</button>
+      </div>
     </div>
+
+    <div class="footer">
+      <p>© 2024 | <a href="https://kenvie.com" target="_blank">Kenvie</a></p>
+    </div>
+  </div>
+  <script src="{{ url_for('static', filename='js/sketch.js') }}"></script>
+  
 </body>
+
 </html>
+
+<!--
+made with ❤️ and p5.js by Ben Moren
+http://benmoren.com
+-->
